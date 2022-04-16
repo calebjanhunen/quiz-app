@@ -39,7 +39,8 @@ main {
     margin-bottom: 40px;
 }
 
-.qstn--answers {
+.qstn--answers,
+.qstn--answers-selected {
     border: 0.794239px solid #4d5b9e;
     box-sizing: border-box;
     background-color: white;
@@ -47,4 +48,8 @@ main {
     padding: 7px;
     cursor: pointer;
     margin-right: 20px;
+}
+
+.qstn--answers-selected {
+    background-color: #d6dbf5;
 }
