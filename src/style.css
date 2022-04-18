@@ -40,7 +40,9 @@ main {
 }
 
 .qstn--answers,
-.qstn--answers-selected {
+.qstn--answers-selected,
+.qstn--answers-correct,
+.qstn--answers-wrong {
     border: 0.794239px solid #4d5b9e;
     box-sizing: border-box;
     background-color: white;
@@ -52,4 +54,26 @@ main {
 
 .qstn--answers-selected {
     background-color: #d6dbf5;
+}
+
+.qstn--answers-correct {
+    background-color: #94d7a2;
+}
+
+.qstn--answers-wrong {
+    background-color: #f8bcbc;
+}
+
+.submitBtn {
+    background-color: #4d5b9e;
+    border: 1px;
+    width: 120px;
+    height: 35px;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-top: 10px;
+
+    /*text*/
+    color: #f5f7fb;
+    font-weight: 600;
 }
