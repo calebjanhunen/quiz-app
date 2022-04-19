@@ -5,20 +5,24 @@ import { nanoid } from "nanoid";
 
 export default function App() {
     const [showQuestions, setShowQuestions] = React.useState(false);
-    const [showAnswers, setShowAnswers] = React.useState(false);
+    const [showScore, setShowScore] = React.useState();
     const [allQuestionsData, setQuestionsData] = React.useState([]);
     const [questionObjects, setQuestionObjects] = React.useState();
     const [questionElements, setQuestionElements] = React.useState();
-    // let questionObjects;
+    const [initialize, setInitialize] = React.useState(false);
 
-    let ansArr = [];
-
-    //API call
+    //API call / Initialize
     React.useEffect(() => {
         fetch("https://opentdb.com/api.php?amount=5&difficulty=medium")
             .then((res) => res.json())
             .then((data) => setQuestionsData(data.results));
-    }, []);
+
+        setShowScore(false);
+    }, [initialize]);
+
+    function displayQuiz() {
+        setShowQuestions(true);
+    }
 
     //Fischer-Yates Array Shuffle Alogrithm
     function shuffleArray(arr) {
@@ -38,9 +42,12 @@ export default function App() {
                 //if question object id = id of object containing answer selected ->
                 //loops through answer array in object and sets isSelected of the answer selected to true
                 if (obj.id === qstnObjectId) {
-                    const newAns = obj.answers.map((ans) =>
-                        ans.id === answerId ? { ...ans, isSelected: true } : ans
-                    );
+                    const newAns = obj.answers.map((ans) => {
+                        ans.isSelected = false;
+                        return ans.id === answerId
+                            ? { ...ans, isSelected: true }
+                            : ans;
+                    });
                     return { ...obj, answers: newAns };
                 } else {
                     return obj;
@@ -102,26 +109,58 @@ export default function App() {
 
     //Displays correct answer when "Check Answer" button is clicked
     function showCorrectAns() {
-        // console.log(questionElements);
+        setShowScore(true);
         setQuestionObjects((prevElements) => {
-            // console.log(prevElements);
             return prevElements.map((el) => {
                 return { ...el, showAnswers: true };
             });
         });
     }
 
+    function calcScore() {
+        let numCorrect = 0;
+        questionObjects.forEach((obj) =>
+            obj.answers.forEach((ans) => {
+                if (ans.isSelected && ans.value === obj.correctAns) {
+                    numCorrect++;
+                }
+            })
+        );
+        return `You scored ${numCorrect}/5 correct answers`;
+    }
+
     return (
         <main>
-            <div className="question-container">
-                {showQuestions && <StartPage />}
-                {questionElements && (
-                    <div className="all-questions">{questionElements}</div>
+            {!showQuestions && <StartPage displayQuiz={displayQuiz} />}
+            {showQuestions && (
+                <div className="question-container disp">
+                    {questionElements && (
+                        <div className="all-questions">{questionElements}</div>
+                    )}
+                </div>
+            )}
+            <div className="score--container">
+                {showScore && (
+                    <h1 className="score--text score--container">
+                        {calcScore()}
+                    </h1>
                 )}
-                <button className="submitBtn" onClick={showCorrectAns}>
+                {showScore && (
+                    <button
+                        className="btn--play-again score--container"
+                        onClick={() =>
+                            setInitialize((prevInitialize) => !prevInitialize)
+                        }
+                    >
+                        Play Again
+                    </button>
+                )}
+            </div>
+            {!showScore && showQuestions && (
+                <button className="btn--submit disp" onClick={showCorrectAns}>
                     Check Answers
                 </button>
-            </div>
+            )}
         </main>
     );
 }
