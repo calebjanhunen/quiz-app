@@ -15,40 +15,10 @@ export default function App() {
 
     //API call
     React.useEffect(() => {
-        console.log("api fetch");
         fetch("https://opentdb.com/api.php?amount=5&difficulty=medium")
-            .then(res => res.json())
-            .then(data => setQuestionsData(data.results));
+            .then((res) => res.json())
+            .then((data) => setQuestionsData(data.results));
     }, []);
-    // console.log(allQuestionsData);
-
-    // function createAnsArray() {
-    //     let answers = [];
-    //     console.log(allQuestionsData);
-    //     allQuestionsData.forEach(questionData => {
-    //         console.log(questionData.correct_answer);
-    //         answers.push(...questionData.incorrect_answers);
-    //         answers.push(questionData.correct_answer);
-    //         setAllAnswers([
-    //             ...questionData.incorrect_answers,
-    //             questionData.correct_answer,
-    //         ]);
-    //     });
-    //     answers.forEach(answer => {
-    //         ansArr.push({
-    //             value: answer,
-    //             isSelected: false,
-    //             id: nanoid(),
-    //         });
-    //     });
-    //     return answers;
-    // }
-    // if (allQuestionsData) {
-    // console.log("hey");
-
-    // console.log(allAnswers);
-    // }
-    // console.log("Answer " + answers);
 
     //Fischer-Yates Array Shuffle Alogrithm
     function shuffleArray(arr) {
@@ -60,86 +30,89 @@ export default function App() {
         }
     }
 
-    //Create list of questions and answers from pulled data
+    //Loops through each answer in questionObjects and sets isSelected to true for the answer selected
+    function changeIsSelected(answerId, qstnObjectId) {
+        //Updates questionObjects state
+        setQuestionObjects((prevObj) => {
+            return prevObj.map((obj) => {
+                //if question object id = id of object containing answer selected ->
+                //loops through answer array in object and sets isSelected of the answer selected to true
+                if (obj.id === qstnObjectId) {
+                    const newAns = obj.answers.map((ans) =>
+                        ans.id === answerId ? { ...ans, isSelected: true } : ans
+                    );
+                    return { ...obj, answers: newAns };
+                } else {
+                    return obj;
+                }
+            });
+        });
+    }
+
+    //Create an array of objects for each question (runs once during first render)
     React.useEffect(() => {
         if (allQuestionsData) {
             let answers = [];
             setQuestionObjects(
-                allQuestionsData.map(questionData => {
+                allQuestionsData.map((questionData) => {
                     // Shuffle order of answers
                     answers = [...questionData.incorrect_answers];
                     answers.push(questionData.correct_answer);
 
+                    //Shuffle Array
                     shuffleArray(answers);
-                    const ansArr = answers.map(ans => {
+
+                    //Create array of objects for each answer
+                    const ansArr = answers.map((ans) => {
                         return {
                             value: ans,
                             isSelected: false,
                             id: nanoid(),
                         };
                     });
-                    // console.log(ansArr);
 
                     return {
                         answers: [...ansArr],
                         showAnswers: false,
                         correctAns: questionData.correct_answer,
                         qstn: questionData.question,
+                        id: nanoid(),
                     };
                 })
             );
         }
     }, [allQuestionsData]);
-    // console.log(questionObjects);
-    let questionElements2;
+
+    //Create a component element for each question (runs everytime the array of question objects changes)
     React.useEffect(() => {
-        console.log(questionObjects);
         if (questionObjects) {
-            // questionObjects.forEach(obj => {
-            //     console.log(obj);
-            //     setQuestionElements(<Question key={nanoid()} qstnInfo={obj} />);
-            // });
             setQuestionElements(
-                questionObjects.map(obj => {
-                    // console.log(obj);
-                    return <Question key={nanoid()} qstnInfo={obj} />;
+                questionObjects.map((obj) => {
+                    return (
+                        <Question
+                            key={nanoid()}
+                            qstnInfo={obj}
+                            changeIsSelected={changeIsSelected}
+                        />
+                    );
                 })
             );
         }
     }, [questionObjects]);
-    // console.log(questionElements);
-    // console.log(questionElements);
-    // return (
-    //     <Question
-    //         key={nanoid()}
-    //         qstn={questionData.question}
-    //         answers={ansArr}
-    //         correctAns={questionData.correct_answer}
-    //         showAnswers={showAnswers}
-    //     />
-    // );
 
-    function showCorrectAns(event) {
-        console.log("clicked");
-        // console.log(event);
-        // event.preventDefault();
-        // setShowAnswers(prev => !prev);
-        setQuestionObjects(prevElements => {
-            //TODO: Change showAnswers when button is clicked
-            console.log(prevElements);
-            return prevElements.map(el => {
-                // console.log(el.showAnswers);
+    //Displays correct answer when "Check Answer" button is clicked
+    function showCorrectAns() {
+        // console.log(questionElements);
+        setQuestionObjects((prevElements) => {
+            // console.log(prevElements);
+            return prevElements.map((el) => {
                 return { ...el, showAnswers: true };
             });
-            // return prevElements;
-            // console.log(questionObjects);
-            // return { ...prevElements, showAnswers: true };
         });
     }
 
     return (
         <main>
-            <h1>TEST CODE</h1>
             <div className="question-container">
                 {showQuestions && <StartPage />}
                 {questionElements && (
